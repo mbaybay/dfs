@@ -1,0 +1,112 @@
+syntax = "proto2";
+option java_package = "edu.usfca.cs.dfs";
+
+message ChunkMeta {
+    required bytes id = 1;
+    optional bytes checksum = 2;
+    enum status {
+        NEW = 0;
+        CORRUPT = 1;
+    }
+    optional status type = 3;
+}
+
+message StoreFileStatus {
+    required string filename = 1;
+    enum status {
+        SUCCESS = 0;
+        FAIL = 1;
+    }
+    required status type = 2;
+}
+
+message StoreFile {
+    required string clientName = 1;
+    required uint32 clientPort = 2;
+    required string filename = 3;
+    repeated bytes chunkId = 4;
+}
+
+message ChunkStorage {
+    repeated StorageNode storageNode = 1;
+}
+
+message FileStorageLists {
+    repeated bytes chunkId = 1;
+    repeated ChunkStorage chunkStorage = 2;
+}
+
+message StoreChunk {
+    required ChunkMeta meta = 1;     // include both chunkId and checksum
+    required bytes data = 2;
+    optional ChunkStorage chunkStorage = 3;
+}
+
+message SendReplica {
+    required bytes chunkId = 1;
+    required StorageNode storageNode = 2;
+}
+
+message RetrieveFile {
+    required string fileName = 1;
+}
+
+message RetrieveChunk {
+    required bytes chunkId = 1;
+    enum status {
+        VALID = 0;
+        CORRUPT = 1;
+    }
+    optional status type = 2;
+    optional bytes data = 3;
+}
+
+message StorageNode {
+    required string hostname = 1;
+    required uint32 port = 2;
+}
+
+message Heartbeat {
+    required StorageNode storageNode = 1;
+    optional uint64 availDiskSpace = 2;
+    optional uint64 usedDiskSpace = 3;
+    repeated ChunkMeta chunkMeta = 4;
+}
+
+message SendFileList {
+    required string hostname = 1;
+    required uint32 port = 2;
+}
+
+message FileList {
+    repeated string filename = 1;
+}
+
+message SendSummary {
+    required string hostname = 1;
+    required uint32 port = 2;
+}
+
+message StorageSummary {
+    required float totalAvail = 1;
+    required float totalUsed = 2;
+    required int32 nHosts = 3;
+}
+
+message StorageMessageWrapper {
+    oneof msg {
+        StorageNode addStorageMsg = 1;
+        StoreFile storeFileMsg = 2;
+        StoreChunk storeChunkMsg = 3;
+        RetrieveFile retrieveFileMsg = 4;
+        RetrieveChunk retrieveChunkMsg = 5;
+        FileStorageLists fileStorageListsMsg = 6;
+        Heartbeat heartbeatMsg = 7;
+        StoreFileStatus storeFileStatusMsg = 8;
+        SendReplica sendReplicaMsg = 9;
+        SendFileList sendFileListMsg = 10;
+        FileList fileListMsg = 11;
+        SendSummary sendSummaryMsg = 12;
+        StorageSummary storageSummaryMsg = 13;
+    }
+}
